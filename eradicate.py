@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from config import TOKEN, GUILD_ID, PROTECTED_ROLE_ID
+from config import TOKEN, GUILD_ID
 
 
 intents = discord.Intents.default()
