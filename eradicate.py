@@ -45,8 +45,15 @@ async def on_ready():
         print(f"{len(channels)} channels found:")
 
         for channel in channels:
-            print(f"{channel.name} | {channel.id} | {channel.type}")
-            await channel.delete(reason="Delete")
+            try:
+                print(f"Processing: {channel.name} ({channel.id})")
+                await channel.delete(reason="Delete")
+
+            except discord.Forbidden:
+                print(f"Skipped (missing permissions): {channel.name}")
+
+            except discord.HTTPException as error:
+                print(f"Failed: {channel.name} | {error}")
 
         members = await get_all_members(guild)
         for member in members:
